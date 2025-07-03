@@ -1,6 +1,8 @@
 import { mainnet, optimism, sepolia } from "wagmi/chains";
 import { Address } from "viem";
 
+export const allChains = [mainnet, optimism, sepolia];
+
 export const tokens: { address: Address; chainId: number; name: string }[] = [
   { address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", chainId: mainnet.id, name: "WETH" },
   { address: "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599", chainId: mainnet.id, name: "WBTC" },

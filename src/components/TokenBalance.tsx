@@ -3,10 +3,7 @@
 import Image from "next/image";
 import { useMemo, useState, useEffect } from "react";
 import { useBalance } from "wagmi";
-import { mainnet, optimism, sepolia } from "wagmi/chains";
-import { tokens } from "@/lib/constants";
-
-const allChains = [mainnet, optimism, sepolia];
+import { tokens, allChains } from "@/lib/constants";
 
 export function TokenBalance({ address, token }: { address: `0x${string}`; token: typeof tokens[0] }) {
   const [tokenLogoUrl, setTokenLogoUrl] = useState<string | null>(null);

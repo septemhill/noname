@@ -3,6 +3,7 @@
 import TokenSupplyCard from "@/components/TokenSupplyCard";
 import { mainnet, optimism } from "viem/chains";
 import { Header } from "@/components/Header";
+import { TransferComponent } from "@/components/TransferComponent";
 
 export default function Home() {
   const wethAddress = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
@@ -19,6 +20,7 @@ export default function Home() {
             <TokenSupplyCard tokenAddress={ethwbtcAddress} chain={mainnet} />
             <TokenSupplyCard tokenAddress={opusdcAddress} chain={optimism} />
           </div>
+          <TransferComponent />
         </div>
       </main>
     </div>
