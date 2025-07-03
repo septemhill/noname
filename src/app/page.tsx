@@ -20,8 +20,12 @@ export default function Home() {
             <TokenSupplyCard tokenAddress={ethwbtcAddress} chain={mainnet} />
             <TokenSupplyCard tokenAddress={opusdcAddress} chain={optimism} />
           </div>
-          <TransferComponent />
         </div>
+
+          {/* <div className="flex flex-wrap gap-4 justify-center pt-8"> */}
+            <TransferComponent />
+          {/* </div> */}
+
       </main>
     </div>
   );
