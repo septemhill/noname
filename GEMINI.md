@@ -31,7 +31,13 @@ The Gemini CLI Tool will be an indispensable asset in my daily workflow, especia
 - **Code Quality Analysis:** Based on project code, provide interpretations of linter reports or suggest areas for improvement.
 - **Automation Workflow Integration:** Assist in integrating linters and package management into CI/CD pipelines or Git Hooks.
 
-## 4. Data Visualization
+
+## 4. Version Control & Git Operations
+- **Commit Message Generation:** Automatically generate descriptive and concise commit messages by analyzing the content of staged files, adhering to conventional commit guidelines where applicable.
+- **Git Workflow Advice:** Offer guidance on complex Git operations, branching strategies, rebasing, or resolving merge conflicts.
+- **Staged File Analysis:** Provide insights or summaries of changes within staged files to aid in understanding the current commit's scope.
+
+## 5. Data Visualization
 
 - **Chart Generation:** Suggest or provide code to generate suitable charts for web presentation (e.g., using Chart.js or D3.js) based on time-series or statistical data obtained from the blockchain.
 - **Data Table Rendering:** Help structure complex blockchain data and render it in clear tabular formats on the webpage.

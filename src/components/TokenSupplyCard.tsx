@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { createPublicClient, http, formatUnits, Chain } from "viem";
 import {
@@ -50,6 +51,7 @@ export default function TokenSupplyCard({ tokenAddress, chain }: TokenSupplyCard
   const [totalSupply, setTotalSupply] = useState<string | null>(null);
   const [tokenSymbol, setTokenSymbol] = useState<string | null>(null);
   const [tokenName, setTokenName] = useState<string | null>(null);
+  const [tokenLogoUrl, setTokenLogoUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const publicClient = useMemo(() => createPublicClient({
@@ -63,6 +65,7 @@ export default function TokenSupplyCard({ tokenAddress, chain }: TokenSupplyCard
       setTotalSupply(null);
       setTokenSymbol(null);
       setTokenName(null);
+      setTokenLogoUrl(null);
       setError(null);
 
       try {
@@ -93,6 +96,7 @@ export default function TokenSupplyCard({ tokenAddress, chain }: TokenSupplyCard
         setTotalSupply(formattedSupply);
         setTokenSymbol(symbol);
         setTokenName(name);
+        setTokenLogoUrl(`https://token-icons.llamao.fi/icons/tokens/${chain.id}/${tokenAddress}`);
       } catch (err) {
         console.error(err);
         setError(`Failed to fetch token data on ${chain.name}.`);
@@ -105,12 +109,26 @@ export default function TokenSupplyCard({ tokenAddress, chain }: TokenSupplyCard
     if (tokenAddress && publicClient) {
       fetchTokenData();
     }
-  }, [tokenAddress, publicClient, chain.name]);
+  }, [tokenAddress, publicClient, chain.name, chain.id]);
 
   return (
     <Card className="w-[380px]">
       <CardHeader>
-        <CardTitle>{tokenName ? `${tokenName} (${tokenSymbol})` : "Token"}</CardTitle>
+        <CardTitle>
+          <div className="flex items-center gap-2">
+            {tokenLogoUrl && (
+              <Image
+                src={tokenLogoUrl}
+                alt={`${tokenName ?? 'Token'} logo`}
+                width={24}
+                height={24}
+                className="rounded-full"
+                onError={() => setTokenLogoUrl(null)}
+              />
+            )}
+            <span>{tokenName ? `${tokenName} (${tokenSymbol})` : "Token"}</span>
+          </div>
+        </CardTitle>
         <CardDescription className="break-words">
           {chain.name}:{" "}
           {chain.blockExplorers?.default.url ? (
