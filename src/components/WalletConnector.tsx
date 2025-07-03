@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { useAccount, useConnect, useDisconnect, useBalance } from "wagmi";
+import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { injected } from "wagmi/connectors";
 import { tokens } from "@/lib/constants";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -43,13 +42,13 @@ export function WalletConnector() {
       <Dialog>
         <DialogTrigger asChild>
           <button className="rounded-md bg-secondary px-4 py-2 text-secondary-foreground">
-            {address.slice(0, 6)}...{address.slice(-4)}
+            {address!.slice(0, 6)}...{address!.slice(-4)}
           </button>
         </DialogTrigger>
         <button onClick={() => disconnect()} className="ml-2 rounded-md bg-destructive px-4 py-2 text-destructive-foreground">
           Disconnect
         </button>
-        <AccountModal address={address} />
+        <AccountModal address={address!} />
       </Dialog>
     );
   }

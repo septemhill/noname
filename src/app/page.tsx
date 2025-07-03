@@ -1,13 +1,11 @@
 "use client";
 
 import TokenSupplyCard from "@/components/TokenSupplyCard";
-import { mainnet, bsc, optimism } from "viem/chains";
+import { mainnet, optimism } from "viem/chains";
 import { Header } from "@/components/Header";
 
 export default function Home() {
   const wethAddress = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
-  const bscunibtcAddress = "0x6B2a01A5f79dEb4c2f3c0eDa7b01DF456FbD726a";
-  const ethunibtcAddress = "0x004E9C3EF86bc1ca1f0bB5C7662861Ee93350568";
   const ethwbtcAddress = "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599";
   const opusdcAddress = "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"
 

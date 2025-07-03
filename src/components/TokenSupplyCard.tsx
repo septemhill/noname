@@ -74,22 +74,22 @@ export default function TokenSupplyCard({ tokenAddress, chain }: TokenSupplyCard
             address: tokenAddress,
             abi: erc20Abi,
             functionName: "totalSupply",
-          }),
+          }) as Promise<bigint>,
           publicClient.readContract({
             address: tokenAddress,
             abi: erc20Abi,
             functionName: "decimals",
-          }),
+          }) as Promise<number>,
           publicClient.readContract({
             address: tokenAddress,
             abi: erc20Abi,
             functionName: "symbol",
-          }),
+          }) as Promise<string>,
           publicClient.readContract({
             address: tokenAddress,
             abi: erc20Abi,
             functionName: "name",
-          }),
+          }) as Promise<string>,
         ]);
 
         const formattedSupply = formatUnits(supply, decimals);
