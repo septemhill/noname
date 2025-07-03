@@ -42,7 +42,9 @@ export function TransferComponent() {
   const { data: nativeBalanceData, isLoading: isNativeBalanceLoading } = useBalance({
     address: address,
     chainId: chainId,
-    enabled: !!address && !!chainId,
+    query: {
+      enabled: !!address && !!chainId,
+    },
   });
 
   // Hook for selected token balance
@@ -50,7 +52,9 @@ export function TransferComponent() {
     address: address,
     token: selectedToken as Address | undefined,
     chainId: chainId,
-    enabled: !!address && !!selectedToken && !!chainId,
+    query: {
+      enabled: !!address && !!selectedToken && !!chainId,
+    },
   });
 
   React.useEffect(() => {

@@ -15,11 +15,7 @@ import {
 
 import { TokenBalance } from "@/components/TokenBalance";
 
-const allChains = [mainnet, optimism, sepolia];
-
 function AccountModal({ address, disconnect }: { address: `0x${string}`; disconnect: () => void }) {
-  const { chain } = useAccount();
-
   return (
     <DialogContent className="w-[800px]">
       <DialogHeader>
