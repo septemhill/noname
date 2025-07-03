@@ -46,7 +46,7 @@ export function TokenBalance({ address, token }: { address: `0x${string}`; token
       <span>
         {isLoading && "Loading..."}
         {error && "Error"}
-        {data && `${parseFloat(data.formatted).toFixed(4)} ${data.symbol}`}
+        {data && `${parseFloat(data.formatted).toFixed(8)} ${data.symbol}`}
       </span>
     </li>
   );

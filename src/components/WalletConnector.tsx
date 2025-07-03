@@ -2,6 +2,7 @@
 
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { injected } from "wagmi/connectors";
+import { mainnet, optimism, sepolia } from "wagmi/chains";
 import { tokens } from "@/lib/constants";
 import { CardContent } from "@/components/ui/card";
 import {
@@ -14,10 +15,13 @@ import {
 
 import { TokenBalance } from "@/components/TokenBalance";
 
-function AccountModal({ address }: { address: `0x${string}` }) {
+const allChains = [mainnet, optimism, sepolia];
+
+function AccountModal({ address, disconnect }: { address: `0x${string}`; disconnect: () => void }) {
+  const { chain } = useAccount();
 
   return (
-    <DialogContent className="w-[400px]">
+    <DialogContent className="w-[800px]">
       <DialogHeader>
         <DialogTitle>Token Balances</DialogTitle>
       </DialogHeader>
@@ -27,6 +31,9 @@ function AccountModal({ address }: { address: `0x${string}` }) {
             <TokenBalance key={token.address} address={address} token={token} />
           ))}
         </ul>
+        <button onClick={disconnect} className="mt-4 w-full rounded-md bg-destructive py-2 text-destructive-foreground">
+          Disconnect
+        </button>
       </CardContent>
     </DialogContent>
   );
@@ -45,10 +52,7 @@ export function WalletConnector() {
             {address!.slice(0, 6)}...{address!.slice(-4)}
           </button>
         </DialogTrigger>
-        <button onClick={() => disconnect()} className="ml-2 rounded-md bg-destructive px-4 py-2 text-destructive-foreground">
-          Disconnect
-        </button>
-        <AccountModal address={address!} />
+        <AccountModal address={address!} disconnect={disconnect} />
       </Dialog>
     );
   }

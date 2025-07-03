@@ -13,7 +13,7 @@ export default function Home() {
     <div className="relative flex min-h-screen flex-col bg-background">
       <Header />
       <main className="flex-1 pt-16">
-        <div className="container py-8">
+        <div className="py-8">
           <div className="flex flex-wrap gap-4 justify-center">
             <TokenSupplyCard tokenAddress={wethAddress} chain={mainnet} />
             <TokenSupplyCard tokenAddress={ethwbtcAddress} chain={mainnet} />
