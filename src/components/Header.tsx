@@ -1,6 +1,6 @@
 "use client";
 
-import { ConnectButton } from "./ConnectButton";
+import { WalletConnector } from "./WalletConnector";
 
 export function Header() {
   return (
@@ -8,7 +8,7 @@ export function Header() {
       <div className="container flex h-14 items-center justify-between">
         <div className="font-bold">Chain Explorer</div>
         <div className="flex items-center gap-4">
-          <ConnectButton />
+          <WalletConnector />
         </div>
       </div>
     </header>

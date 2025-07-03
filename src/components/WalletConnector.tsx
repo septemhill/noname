@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useAccount, useConnect, useDisconnect, useBalance } from "wagmi";
 import { injected } from "wagmi/connectors";
-import { mainnet, optimism } from "wagmi/chains";
+import { tokens } from "@/lib/constants";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
@@ -13,13 +13,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-const tokens = [
-  { address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", chainId: mainnet.id, name: "WETH" },
-  { address: "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599", chainId: mainnet.id, name: "WBTC" },
-  { address: "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85", chainId: optimism.id, name: "USDC" },
-];
+import { TokenBalance } from "@/components/TokenBalance";
 
 function AccountModal({ address }: { address: `0x${string}` }) {
+
   return (
     <DialogContent className="w-[400px]">
       <DialogHeader>
@@ -34,29 +31,9 @@ function AccountModal({ address }: { address: `0x${string}` }) {
       </CardContent>
     </DialogContent>
   );
-} 
-
-
-function TokenBalance({ address, token }: { address: `0x${string}`; token: typeof tokens[0] }) {
-  const { data, isLoading, error } = useBalance({
-    address,
-    token: token.address,
-    chainId: token.chainId,
-  });
-
-  return (
-    <li className="flex justify-between py-2 border-b">
-      <span>{token.name}</span>
-      <span>
-        {isLoading && "Loading..."}
-        {error && "Error"}
-        {data && `${parseFloat(data.formatted).toFixed(4)} ${data.symbol}`}
-      </span>
-    </li>
-  );
 }
 
-export function ConnectButton() {
+export function WalletConnector() {
   const { address, isConnected } = useAccount();
   const { connect } = useConnect();
   const { disconnect } = useDisconnect();
