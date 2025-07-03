@@ -116,16 +116,20 @@ export default function TokenSupplyCard({ tokenAddress, chain }: TokenSupplyCard
       <CardHeader>
         <CardTitle>
           <div className="flex items-center gap-2">
-            {tokenLogoUrl && (
-              <Image
-                src={tokenLogoUrl}
-                alt={`${tokenName ?? 'Token'} logo`}
-                width={24}
-                height={24}
-                className="rounded-full"
-                onError={() => setTokenLogoUrl(null)}
-              />
-            )}
+            <div className="w-6 h-6 flex-shrink-0">
+              {tokenLogoUrl ? (
+                <Image
+                  src={tokenLogoUrl}
+                  alt={`${tokenName ?? 'Token'} logo`}
+                  width={24}
+                  height={24}
+                  className="rounded-full"
+                  onError={() => setTokenLogoUrl(null)}
+                />
+              ) : (
+                <div className="w-full h-full rounded-full bg-muted" />
+              )}
+            </div>
             <span>{tokenName ? `${tokenName} (${tokenSymbol})` : "Token"}</span>
           </div>
         </CardTitle>
@@ -136,12 +140,12 @@ export default function TokenSupplyCard({ tokenAddress, chain }: TokenSupplyCard
               href={`${chain.blockExplorers.default.url}/token/${tokenAddress}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="underline hover:text-blue-500"
+              className="underline hover:text-blue-500 text-xs"
             >
               {tokenAddress}
             </a>
           ) : (
-            tokenAddress
+            <span className="text-xs">{tokenAddress}</span>
           )}
         </CardDescription>
       </CardHeader>
