@@ -6,12 +6,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Selector } from "./Selector";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { allChains, tokens } from "@/lib/constants";
-import { useAccount, useBalance } from "wagmi";
-import { formatUnits } from "viem";
+import { useAccount, useBalance, useFeeData, useSimulateContract, useWriteContract } from "wagmi";
+import { formatUnits, parseUnits } from "viem";
+import { erc20Abi } from "viem";
 import type { Address } from "viem";
 
-// Prepare data for the Selector components
+// Prepare Selector data
 const chainOptions = allChains.map(chain => ({
   value: String(chain.id),
   label: chain.name,
@@ -26,6 +36,14 @@ const tokensByChainId = tokens.reduce((acc, token) => {
   return acc;
 }, {} as { [key: string]: { value: string; label: string }[] });
 
+// 安全 parseUnits，避免錯誤拋出
+function safeParseUnits(amountStr: string, decimals: number = 18): bigint {
+  try {
+    return parseUnits(amountStr, decimals);
+  } catch {
+    return BigInt(0);
+  }
+}
 
 export function TransferComponent() {
   const { address } = useAccount();
@@ -33,29 +51,57 @@ export function TransferComponent() {
   const [availableTokens, setAvailableTokens] = React.useState<{ value: string; label: string }[]>([]);
   const [selectedToken, setSelectedToken] = React.useState<string>("");
   const [recipientAddress, setRecipientAddress] = React.useState<string>("");
+  const [amount, setAmount] = React.useState<string>("");
   const [nativeBalance, setNativeBalance] = React.useState<string>("");
   const [tokenBalance, setTokenBalance] = React.useState<string>("");
+  const [gasFee, setGasFee] = React.useState<string>("");
+  const [txHash, setTxHash] = React.useState<string>("");
+  const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
 
+  const { data: feeData } = useFeeData();
   const chainId = selectedChain ? parseInt(selectedChain) : undefined;
 
-  // Hook for native currency balance
   const { data: nativeBalanceData, isLoading: isNativeBalanceLoading } = useBalance({
-    address: address,
-    chainId: chainId,
+    address,
+    chainId,
+    query: { enabled: !!address && !!chainId },
+  });
+
+  const { data: tokenBalanceData, isLoading: isTokenBalanceLoading } = useBalance({
+    address,
+    token: selectedToken as Address,
+    chainId,
+    query: { enabled: !!address && !!selectedToken && !!chainId },
+  });
+
+  const decimals = tokenBalanceData?.decimals || 18;
+  const isValidAmount = /^\d+(\.\d{1,18})?$/.test(amount);
+  const isSimulatable = !!selectedToken && !!recipientAddress && !!isValidAmount && !!chainId;
+
+  const { data: simulationResult } = useSimulateContract({
+    address: selectedToken as Address,
+    abi: erc20Abi,
+    functionName: 'transfer',
+    args: [recipientAddress as Address, safeParseUnits(amount, decimals)],
+    chainId,
     query: {
-      enabled: !!address && !!chainId,
+      enabled: isSimulatable,
     },
   });
 
-  // Hook for selected token balance
-  const { data: tokenBalanceData, isLoading: isTokenBalanceLoading } = useBalance({
-    address: address,
-    token: selectedToken as Address | undefined,
-    chainId: chainId,
-    query: {
-      enabled: !!address && !!selectedToken && !!chainId,
-    },
-  });
+  const estimatedGas = simulationResult?.request.gas;
+
+  const { writeContract, isPending, isSuccess } = useWriteContract();
+
+  React.useEffect(() => {
+    if (estimatedGas && feeData?.gasPrice && nativeBalanceData?.decimals != null) {
+      const fee = estimatedGas * feeData.gasPrice;
+      const formatted = formatUnits(fee, nativeBalanceData.decimals);
+      setGasFee(`${parseFloat(formatted).toFixed(8)} ${nativeBalanceData.symbol}`);
+    } else {
+      setGasFee("");
+    }
+  }, [estimatedGas, feeData, nativeBalanceData]);
 
   React.useEffect(() => {
     if (nativeBalanceData) {
@@ -80,25 +126,42 @@ export function TransferComponent() {
     setSelectedToken("");
     setNativeBalance("");
     setTokenBalance("");
+    setGasFee("");
     setAvailableTokens(tokensByChainId[chainId] || []);
   };
 
   const handleTokenChange = (tokenAddress: string) => {
     setSelectedToken(tokenAddress);
     setTokenBalance("");
+    setGasFee("");
   };
 
-  const handleTransfer = () => {
-    if (!selectedChain || !selectedToken || !recipientAddress) {
+  const handlePreview = () => {
+    if (!selectedChain || !selectedToken || !recipientAddress || !amount) {
       alert("Please fill out all fields.");
       return;
     }
-    console.log("Transfer Details:");
-    console.log("  Chain ID:", selectedChain);
-    console.log("  Token Address:", selectedToken);
-    console.log("  Recipient:", recipientAddress);
-    alert("Transaction confirmed! Check the console for details.");
+    setIsDialogOpen(true);
   };
+
+  const handleConfirmTransfer = () => {
+    if (!simulationResult?.request) {
+      alert("Transaction could not be prepared. Please check the details.");
+      return;
+    }
+    writeContract(simulationResult.request, {
+      onSuccess: (hash) => {
+        setTxHash(hash);
+        setIsDialogOpen(false);
+      },
+      onError: () => {
+        setIsDialogOpen(false);
+      }
+    });
+  };
+
+  const selectedChainInfo = allChains.find(c => String(c.id) === selectedChain);
+  const selectedTokenInfo = availableTokens.find(t => t.value === selectedToken);
 
   return (
     <Card>
@@ -113,15 +176,12 @@ export function TransferComponent() {
             onValueChange={handleChainChange}
             value={selectedChain}
             placeholder="Select a chain"
-            aria-label="Chain Selector"
           />
         </div>
 
         {isNativeBalanceLoading && <p className="text-sm text-muted-foreground">Fetching native balance...</p>}
         {nativeBalance && !isNativeBalanceLoading && (
-          <div className="text-sm text-muted-foreground">
-            Balance: {nativeBalance}
-          </div>
+          <div className="text-sm text-muted-foreground">Balance: {nativeBalance}</div>
         )}
 
         <div className="space-y-2">
@@ -132,15 +192,12 @@ export function TransferComponent() {
             value={selectedToken}
             placeholder="Select a token"
             disabled={!selectedChain}
-            aria-label="Token Selector"
           />
         </div>
-        
+
         {isTokenBalanceLoading && <p className="text-sm text-muted-foreground">Fetching token balance...</p>}
         {tokenBalance && !isTokenBalanceLoading && (
-          <div className="text-sm text-muted-foreground">
-            Balance: {tokenBalance}
-          </div>
+          <div className="text-sm text-muted-foreground">Balance: {tokenBalance}</div>
         )}
 
         <div className="space-y-2">
@@ -152,11 +209,66 @@ export function TransferComponent() {
             onChange={(e) => setRecipientAddress(e.target.value)}
           />
         </div>
-        <Button onClick={handleTransfer} className="w-full">
-          Confirm Transfer
-        </Button>
+
+        <div className="space-y-2">
+          <Label htmlFor="amount">Amount</Label>
+          <Input
+            id="amount"
+            placeholder="Enter amount"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+          />
+        </div>
+
+        {gasFee && (
+          <div className="text-sm text-muted-foreground">
+            Estimated Gas Fee: {gasFee}
+          </div>
+        )}
+
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button onClick={handlePreview} className="w-full">
+              Preview Transfer
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Transaction Preview</DialogTitle>
+              <DialogDescription>
+                Please review the details of your transaction before confirming.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-2">
+              <p><strong>Chain:</strong> {selectedChainInfo?.label}</p>
+              <p><strong>Token:</strong> {selectedTokenInfo?.label}</p>
+              <p><strong>Amount:</strong> {amount}</p>
+              <p><strong>Recipient:</strong> {recipientAddress}</p>
+              <p><strong>Estimated Gas Fee:</strong> {gasFee}</p>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleConfirmTransfer} disabled={isPending}>
+                {isPending ? "Confirming..." : "Confirm Transfer"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {isSuccess && txHash && (
+          <div className="text-sm text-green-500">
+            Transaction successful!{' '}
+            <a
+              href={`${selectedChainInfo?.blockExplorers?.default.url}/tx/${txHash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline"
+            >
+              View on Explorer
+            </a>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
 }
-

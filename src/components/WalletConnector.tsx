@@ -2,7 +2,6 @@
 
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { injected } from "wagmi/connectors";
-import { mainnet, optimism, sepolia } from "wagmi/chains";
 import { tokens } from "@/lib/constants";
 import { CardContent } from "@/components/ui/card";
 import {
