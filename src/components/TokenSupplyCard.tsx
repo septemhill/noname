@@ -112,7 +112,7 @@ export default function TokenSupplyCard({ tokenAddress, chain }: TokenSupplyCard
   }, [tokenAddress, publicClient, chain.name, chain.id]);
 
   return (
-    <Card className="w-[380px]">
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>
           <div className="flex items-center gap-2">
