@@ -220,12 +220,6 @@ export function TransferComponent() {
           />
         </div>
 
-        {gasFee && (
-          <div className="text-sm text-muted-foreground">
-            Estimated Gas Fee: {gasFee}
-          </div>
-        )}
-
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={handlePreview} className="w-full">
@@ -239,12 +233,27 @@ export function TransferComponent() {
                 Please review the details of your transaction before confirming.
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-2">
-              <p><strong>Chain:</strong> {selectedChainInfo?.label}</p>
-              <p><strong>Token:</strong> {selectedTokenInfo?.label}</p>
-              <p><strong>Amount:</strong> {amount}</p>
-              <p><strong>Recipient:</strong> {recipientAddress}</p>
-              <p><strong>Estimated Gas Fee:</strong> {gasFee}</p>
+            <div className="grid gap-4">
+              <div className="grid gap-1">
+                <p className="text-sm font-medium text-muted-foreground">Chain</p>
+                <p className="text-base font-semibold">{selectedChainInfo?.name}</p>
+              </div>
+              <div className="grid gap-1">
+                <p className="text-sm font-medium text-muted-foreground">Token</p>
+                <p className="text-base font-semibold">{selectedTokenInfo?.label}</p>
+              </div>
+              <div className="grid gap-1">
+                <p className="text-sm font-medium text-muted-foreground">Amount</p>
+                <p className="text-base font-semibold">{amount}</p>
+              </div>
+              <div className="grid gap-1">
+                <p className="text-sm font-medium text-muted-foreground">Recipient</p>
+                <p className="text-base font-semibold">{recipientAddress}</p>
+              </div>
+              <div className="grid gap-1">
+                <p className="text-sm font-medium text-muted-foreground">Estimated Gas Fee</p>
+                <p className="text-base font-semibold">{gasFee}</p>
+              </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
