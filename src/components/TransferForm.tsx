@@ -6,15 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Selector } from "./Selector";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-} from "@/components/ui/dialog";
+
+import { PreviewDialog } from "@/components/PreviewDialog";
+
 import { allChains, tokens } from "@/lib/constants";
 import { useAccount, useBalance, useFeeData, useSimulateContract, useWriteContract } from "wagmi";
 import { formatUnits, parseUnits } from "viem";
@@ -45,7 +39,7 @@ function safeParseUnits(amountStr: string, decimals: number = 18): bigint {
   }
 }
 
-export function TransferComponent() {
+export function TransferForm() {
   const { address } = useAccount();
   const [selectedChain, setSelectedChain] = React.useState<string>("");
   const [availableTokens, setAvailableTokens] = React.useState<{ value: string; label: string }[]>([]);
@@ -54,7 +48,7 @@ export function TransferComponent() {
   const [amount, setAmount] = React.useState<string>("");
   const [nativeBalance, setNativeBalance] = React.useState<string>("");
   const [tokenBalance, setTokenBalance] = React.useState<string>("");
-  const [gasFee, setGasFee] = React.useState<string>("");
+  // const [gasFee, setGasFee] = React.useState<string>("");
   const [txHash, setTxHash] = React.useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
 
@@ -93,15 +87,15 @@ export function TransferComponent() {
 
   const { writeContract, isPending, isSuccess } = useWriteContract();
 
-  React.useEffect(() => {
-    if (estimatedGas && feeData?.gasPrice && nativeBalanceData?.decimals != null) {
-      const fee = estimatedGas * feeData.gasPrice;
-      const formatted = formatUnits(fee, nativeBalanceData.decimals);
-      setGasFee(`${parseFloat(formatted).toFixed(8)} ${nativeBalanceData.symbol}`);
-    } else {
-      setGasFee("");
-    }
-  }, [estimatedGas, feeData, nativeBalanceData]);
+  // React.useEffect(() => {
+  //   if (estimatedGas && feeData?.gasPrice && nativeBalanceData?.decimals != null) {
+  //     const fee = estimatedGas * feeData.gasPrice;
+  //     const formatted = formatUnits(fee, nativeBalanceData.decimals);
+  //     setGasFee(`${parseFloat(formatted).toFixed(8)} ${nativeBalanceData.symbol}`);
+  //   } else {
+  //     setGasFee("");
+  //   }
+  // }, [estimatedGas, feeData, nativeBalanceData]);
 
   React.useEffect(() => {
     if (nativeBalanceData) {
@@ -126,23 +120,17 @@ export function TransferComponent() {
     setSelectedToken("");
     setNativeBalance("");
     setTokenBalance("");
-    setGasFee("");
+    // setGasFee("");
     setAvailableTokens(tokensByChainId[chainId] || []);
   };
 
   const handleTokenChange = (tokenAddress: string) => {
     setSelectedToken(tokenAddress);
     setTokenBalance("");
-    setGasFee("");
+    // setGasFee("");
   };
 
-  const handlePreview = () => {
-    if (!selectedChain || !selectedToken || !recipientAddress || !amount) {
-      alert("Please fill out all fields.");
-      return;
-    }
-    setIsDialogOpen(true);
-  };
+  
 
   const handleConfirmTransfer = () => {
     if (!simulationResult?.request) {
@@ -220,49 +208,25 @@ export function TransferComponent() {
           />
         </div>
 
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={handlePreview} className="w-full">
-              Preview Transfer
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Transaction Preview</DialogTitle>
-              <DialogDescription>
-                Please review the details of your transaction before confirming.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4">
-              <div className="grid gap-1">
-                <p className="text-sm font-medium text-muted-foreground">Chain</p>
-                <p className="text-base font-semibold">{selectedChainInfo?.name}</p>
-              </div>
-              <div className="grid gap-1">
-                <p className="text-sm font-medium text-muted-foreground">Token</p>
-                <p className="text-base font-semibold">{selectedTokenInfo?.label}</p>
-              </div>
-              <div className="grid gap-1">
-                <p className="text-sm font-medium text-muted-foreground">Amount</p>
-                <p className="text-base font-semibold">{amount}</p>
-              </div>
-              <div className="grid gap-1">
-                <p className="text-sm font-medium text-muted-foreground">Recipient</p>
-                <p className="text-base font-semibold">{recipientAddress}</p>
-              </div>
-              <div className="grid gap-1">
-                <p className="text-sm font-medium text-muted-foreground">Estimated Gas Fee</p>
-                <p className="text-base font-semibold">{gasFee}</p>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-              <Button onClick={handleConfirmTransfer} disabled={isPending}>
-                {isPending ? "Confirming..." : "Confirm Transfer"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => setIsDialogOpen(true)} className="w-full">
+          Preview Transfer
+        </Button>
+
+        <PreviewDialog
+          isOpen={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          title="Transaction Preview"
+          description="Please review the details of your transaction before confirming."
+          previewInfo={{
+            Chain: selectedChainInfo?.name || "N/A",
+            Token: selectedTokenInfo?.label || "N/A",
+            Amount: amount,
+            Recipient: recipientAddress,
+            // "Estimated Gas Fee": gasFee,
+          }}
+          onConfirm={handleConfirmTransfer}
+          confirmButtonText={isPending ? "Confirming..." : "Confirm Transfer"}
+        />
 
         {isSuccess && txHash && (
           <div className="text-sm text-green-500">
