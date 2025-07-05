@@ -5,6 +5,7 @@ import { mainnet, optimism } from "viem/chains";
 import { TransferForm } from "@/components/TransferForm";
 import { SwapForm } from "@/components/SwapForm";
 import { allChains, tokens } from "@/lib/constants";
+import { P2PExchangeClient } from "@/components/P2PExchangeClient";
 
 export default function Home() {
   const wethAddress = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
@@ -26,9 +27,12 @@ export default function Home() {
           </div>
         </div>
 
-        <TransferForm />
+        {/* <TransferForm /> */}
         {/* <SwapForm chains={serializableChains} tokens={tokens} /> */}
 
+        <div className="mt-8">
+          <P2PExchangeClient />
+        </div>
       </main>
     </div>
   );
