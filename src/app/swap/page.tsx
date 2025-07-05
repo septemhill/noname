@@ -9,7 +9,7 @@ export default function SwapPage() {
   }));
 
   return (
-    <div className="px-16 pt-24">
+    <div className="px-4 pt-24">
       <SwapForm chains={serializableChains} tokens={tokens} />
     </div>
   );
