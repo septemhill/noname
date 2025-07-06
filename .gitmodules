@@ -1,0 +1,3 @@
+[submodule "submodules/contracts"]
+	path = submodules/contracts
+	url = https://github.com/septemhill/contracts
