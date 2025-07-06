@@ -2,9 +2,6 @@
 
 import TokenSupplyCard from "@/components/TokenSupplyCard";
 import { mainnet, optimism } from "viem/chains";
-import { TransferForm } from "@/components/TransferForm";
-import { SwapForm } from "@/components/SwapForm";
-import { allChains, tokens } from "@/lib/constants";
 import { P2PExchangeClient } from "@/components/P2PExchangeClient";
 
 export default function Home() {
@@ -12,10 +9,6 @@ export default function Home() {
   const ethwbtcAddress = "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599";
   const opusdcAddress = "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"
 
-    const serializableChains = allChains.map(chain => ({
-      id: chain.id,
-      name: chain.name,
-    }));
   return (
     <div className="relative flex min-h-screen flex-col bg-background">
       <main className="flex-1 pt-16 pl-4 pr-4">

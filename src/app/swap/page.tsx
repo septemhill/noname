@@ -1,5 +1,5 @@
 
-import { SwapForm } from "@/components/SwapForm";
+import { TestTokenClient } from "@/components/TestTokenClient";
 import { allChains, tokens } from "@/lib/constants";
 
 export default function SwapPage() {
@@ -10,7 +10,9 @@ export default function SwapPage() {
 
   return (
     <div className="px-4 pt-24">
-      <SwapForm chains={serializableChains} tokens={tokens} />
+      <TestTokenClient />
+      {/* <SwapForm chains={serializableChains} tokens={tokens} /> */}
+
     </div>
   );
 }
