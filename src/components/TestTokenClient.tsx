@@ -13,13 +13,13 @@ import { Label } from "./ui/label";
 
 export function TestTokenClient() {
   const { address, chain } = useAccount();
-  const { data: hash, isPending: isWritePending, writeContract, error: writeError } = useWriteContract();
+  const { data: hash, isPending: isWritePending, writeContract, error: _writeError } = useWriteContract();
 
   // TODO: Replace with your deployed TestToken contract address
   const [contractAddress, setContractAddress] = useState<Address>("0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512");
   const [recipient, setRecipient] = useState<Address>("0x70997970C51812dc3A010C7d01b50e0d17dc79C8");
   const [amount, setAmount] = useState("10");
-
+  
   const { 
     data: totalSupply, 
     error: totalSupplyError,
@@ -33,11 +33,6 @@ export function TestTokenClient() {
       enabled: !!contractAddress,
     },
   });
-
-  console.log("totalSupply:", totalSupply);
-  console.log("totalSupplyError:", totalSupplyError);
-  console.log("isTotalSupplyLoading:", isTotalSupplyLoading);
-
 
   const { 
     data: balance, 
@@ -67,6 +62,8 @@ export function TestTokenClient() {
     },
   });
 
+  const tokenDecimals = typeof decimals === 'bigint' ? Number(decimals) : decimals;
+
   const { isLoading: isConfirming, isSuccess: isConfirmed, error: receiptError } =
     useWaitForTransactionReceipt({ hash });
 
@@ -78,32 +75,36 @@ export function TestTokenClient() {
       setAmount("0");
       setRecipient("0x"); // Reset to a valid but empty-like address
     }
-    if (writeError) {
-      toast.error("Transaction Failed", {
-        description: `Error: ${writeError.message}`,
-      });
-    }
     if (receiptError) {
       toast.error("Confirmation Failed", {
         description: `Error: ${receiptError.message}`,
       });
     }
-  }, [isConfirmed, writeError, receiptError, refetchTotalSupply, refetchBalance]);
+  }, [isConfirmed, receiptError, refetchTotalSupply, refetchBalance]);
 
 
   const handleTransfer = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!address) return toast.error("Wallet Not Connected");
     if (!contractAddress || !recipient || !amount) return toast.error("Missing Information");
-    if (typeof decimals !== 'number') return toast.error("Token decimals not loaded yet.");
+    if (typeof tokenDecimals !== 'number') return toast.error("Token decimals not loaded yet.");
 
-    const parsedAmount = parseUnits(amount, decimals);
+    const parsedAmount = parseUnits(amount, tokenDecimals);
 
     writeContract({
       address: contractAddress,
       abi: TestTokenABI.abi,
       functionName: "transfer",
       args: [recipient, parsedAmount],
+    }, {
+      onSuccess: () => {
+        toast.success("Transaction sent! Waiting for confirmation...");
+      },
+      onError: (error) => {
+        toast.error("Transaction Failed", {
+          description: `Error: ${error.message}`,
+        });
+      },
     });
   };
 
@@ -158,7 +159,7 @@ export function TestTokenClient() {
             ) : decimalsError ? (
               <p className="text-red-500">Error fetching decimals: {decimalsError.shortMessage}</p>
             ) : (
-              <p>{typeof totalSupply === 'bigint' && typeof decimals === 'number' ? formatUnits(totalSupply, decimals) : 'N/A'}</p>
+              <p>{typeof totalSupply === 'bigint' && typeof tokenDecimals === 'number' ? formatUnits(totalSupply, tokenDecimals) : 'N/A'}</p>
             )}
           </CardContent>
         </Card>
@@ -174,7 +175,7 @@ export function TestTokenClient() {
             ) : decimalsError ? (
               <p className="text-red-500">Error fetching decimals: {decimalsError.shortMessage}</p>
             ) : (
-              <p>{typeof balance === 'bigint' && typeof decimals === 'number' ? formatUnits(balance, decimals) : 'N/A'}</p>
+              <p>{typeof balance === 'bigint' && typeof tokenDecimals === 'number' ? formatUnits(balance, tokenDecimals) : 'N/A'}</p>
             )}
           </CardContent>
         </Card>

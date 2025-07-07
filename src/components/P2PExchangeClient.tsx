@@ -8,10 +8,12 @@ import { erc20Abi } from "viem";
 import { toast } from "sonner";
 
 import P2PExchangeABI from "../../P2PExchange.json";
-import { Button } from "./ui/button";
+
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
+import { P2PCreateOfferForm } from "./P2PCreateOfferForm";
+import { OpenOffersList } from "./OpenOffersList";
 
 // Define the structure of an Offer based on your contract's Offer struct
 interface Offer {
@@ -40,8 +42,7 @@ export function P2PExchangeClient() {
   const [tokenBuy, setTokenBuy] = useState<Address>("0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0");
   const [amountBuy, setAmountBuy] = useState("222");
 
-  const [fillOfferId, setFillOfferId] = useState("");
-  const [cancelOfferId, setCancelOfferId] = useState("");
+  
   const [offers, setOffers] = useState<Offer[]>([]);
   const [isActionPending, setIsActionPending] = useState(false); // For disabling buttons during multi-step actions
 
@@ -53,6 +54,8 @@ export function P2PExchangeClient() {
       enabled: !!contractAddress && contractAddress !== "0x",
     },
   });
+
+  console.log("contractAddress:", contractAddress);
 
   // Effect to fetch full offer details when openOfferIds are available
   useEffect(() => {
@@ -66,27 +69,27 @@ export function P2PExchangeClient() {
                 address: contractAddress,
                 functionName: 'offers',
                 args: [id]
-              }) as [Address, Address, bigint, Address, bigint, number];
+              }) as [bigint, Address, Address, bigint, Address, bigint, number];
 
-              console.log("offerData:", offerData);
+              console.log("[SEPTEM DEBUG offerData]:", offerData);
 
               const [tokenSellDecimals, tokenBuyDecimals, tokenSellSymbol, tokenBuySymbol] = await Promise.all([
-                wagmiReadContract(config, { abi: erc20Abi, address: offerData[1], functionName: 'decimals' }),
-                wagmiReadContract(config, { abi: erc20Abi, address: offerData[3], functionName: 'decimals' }),
-                wagmiReadContract(config, { abi: erc20Abi, address: offerData[1], functionName: 'symbol' }),
-                wagmiReadContract(config, { abi: erc20Abi, address: offerData[3], functionName: 'symbol' }),
+                wagmiReadContract(config, { abi: erc20Abi, address: offerData[2], functionName: 'decimals' }),
+                wagmiReadContract(config, { abi: erc20Abi, address: offerData[4], functionName: 'decimals' }),
+                wagmiReadContract(config, { abi: erc20Abi, address: offerData[2], functionName: 'symbol' }),
+                wagmiReadContract(config, { abi: erc20Abi, address: offerData[4], functionName: 'symbol' }),
               ]);
 
               return {
                 id: id,
-                maker: offerData[0],
-                tokenSell: offerData[1],
-                amountSell: offerData[2],
-                tokenBuy: offerData[3],
-                amountBuy: offerData[4],
-                status: offerData[5],
-                amountSellFormatted: formatUnits(offerData[2], tokenSellDecimals as number),
-                amountBuyFormatted: formatUnits(offerData[4], tokenBuyDecimals as number),
+                maker: offerData[1],
+                tokenSell: offerData[2],
+                amountSell: offerData[3],
+                tokenBuy: offerData[4],
+                amountBuy: offerData[5],
+                status: offerData[6],
+                amountSellFormatted: formatUnits(offerData[3], tokenSellDecimals as number),
+                amountBuyFormatted: formatUnits(offerData[5], tokenBuyDecimals as number),
                 tokenSellSymbol: tokenSellSymbol as string,
                 tokenBuySymbol: tokenBuySymbol as string,
               };
@@ -100,6 +103,8 @@ export function P2PExchangeClient() {
             }
           })
         );
+
+        console.log("fetchedOffers:", fetchedOffers);
         setOffers(fetchedOffers.filter(Boolean) as Offer[]);
       } else {
         setOffers([]);
@@ -272,6 +277,7 @@ export function P2PExchangeClient() {
       return "Create Offer";
   }
 
+  
   return (
     <div className="space-y-8">
       <Card>
@@ -303,92 +309,28 @@ export function P2PExchangeClient() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Create Offer</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleCreateOffer} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="token-sell">Token to Sell Address</Label>
-              <Input id="token-sell" value={tokenSell} onChange={(e) => setTokenSell(e.target.value as Address)} placeholder="0x..." />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="amount-sell">Amount to Sell</Label>
-              <Input id="amount-sell" value={amountSell} onChange={(e) => setAmountSell(e.target.value)} placeholder="e.g., 100" type="number" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="token-buy">Token to Buy Address</Label>
-              <Input id="token-buy" value={tokenBuy} onChange={(e) => setTokenBuy(e.target.value as Address)} placeholder="0x..." />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="amount-buy">Amount to Buy</Label>
-              <Input id="amount-buy" value={amountBuy} onChange={(e) => setAmountBuy(e.target.value)} placeholder="e.g., 50" type="number" />
-            </div>
-            <Button type="submit" disabled={isButtonDisabled}>{buttonText()}</Button>
-          </form>
-        </CardContent>
-      </Card>
+      <P2PCreateOfferForm
+        tokenSell={tokenSell}
+        setTokenSell={setTokenSell}
+        amountSell={amountSell}
+        setAmountSell={setAmountSell}
+        tokenBuy={tokenBuy}
+        setTokenBuy={setTokenBuy}
+        amountBuy={amountBuy}
+        setAmountBuy={setAmountBuy}
+        isButtonDisabled={isButtonDisabled}
+        buttonText={buttonText()}
+        onCreateOffer={handleCreateOffer}
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Fill Offer</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleFillOffer} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="fill-offer-id">Offer ID to Fill</Label>
-              <Input id="fill-offer-id" value={fillOfferId} onChange={(e) => setFillOfferId(e.target.value)} placeholder="e.g., 0" type="number" />
-            </div>
-            <Button type="submit" disabled={isButtonDisabled}>Fill Offer</Button>
-          </form>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Cancel Offer</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleCancelOffer} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="cancel-offer-id">Offer ID to Cancel</Label>
-              <Input id="cancel-offer-id" value={cancelOfferId} onChange={(e) => setCancelOfferId(e.target.value)} placeholder="e.g., 0" type="number" />
-            </div>
-            <Button type="submit" disabled={isButtonDisabled}>Cancel Offer</Button>
-          </form>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Open Offers</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Button onClick={() => refetchOpenOffers()} disabled={isButtonDisabled}>Refresh Open Offers</Button>
-          {offers.length > 0 ? (
-            <ul className="mt-4 space-y-3">
-              {offers.map((offer) => (
-                <li key={offer.id.toString()} className="p-2 border rounded">
-                  <div><strong>Offer ID:</strong> {offer.id.toString()}</div>
-                  {offer.status === 99 ? (
-                     <div className="text-red-500">Error fetching details</div>
-                  ) : (
-                    <>
-                      <div><strong>Sell:</strong> {offer.amountSellFormatted} {offer.tokenSellSymbol} ({offer.tokenSell})</div>
-                      <div><strong>Buy:</strong> {offer.amountBuyFormatted} {offer.tokenBuySymbol} ({offer.tokenBuy})</div>
-                      <div><strong>Maker:</strong> {offer.maker}</div>
-                      <div><strong>Status:</strong> {offer.status === 0 ? 'Open' : 'Closed'}</div>
-                    </>
-                  )}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-4">No open offers found.</p>
-          )}
-        </CardContent>
-      </Card>
+      <OpenOffersList
+        offers={offers}
+        address={address}
+        isButtonDisabled={isButtonDisabled}
+        refetchOpenOffers={refetchOpenOffers}
+        handleFillOffer={handleFillOffer}
+        handleCancelOffer={handleCancelOffer}
+      />
     </div>
   );
 }

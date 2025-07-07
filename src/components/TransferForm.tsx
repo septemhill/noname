@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { PreviewDialog } from "@/components/PreviewDialog";
 
 import { allChains, tokens } from "@/lib/constants";
-import { useAccount, useBalance, useFeeData, useSimulateContract, useWriteContract } from "wagmi";
+import { useAccount, useBalance, useSimulateContract, useWriteContract } from "wagmi";
 import { formatUnits, parseUnits } from "viem";
 import { erc20Abi } from "viem";
 import type { Address } from "viem";
@@ -52,7 +52,6 @@ export function TransferForm() {
   const [txHash, setTxHash] = React.useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
 
-  const { data: feeData } = useFeeData();
   const chainId = selectedChain ? parseInt(selectedChain) : undefined;
 
   const { data: nativeBalanceData, isLoading: isNativeBalanceLoading } = useBalance({
@@ -83,7 +82,7 @@ export function TransferForm() {
     },
   });
 
-  const estimatedGas = simulationResult?.request.gas;
+  const _estimatedGas = simulationResult?.request.gas;
 
   const { writeContract, isPending, isSuccess } = useWriteContract();
 
