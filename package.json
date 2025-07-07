@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "pnpm --filter ./submodules/contracts install && pnpm --filter ./submodules/contracts run compile && next build",
     "start": "next start",
     "lint": "oxlint",
     "typecheck": "tsc --noEmit"

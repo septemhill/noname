@@ -5,7 +5,7 @@ import { type Address, parseUnits, formatUnits } from "viem";
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { toast } from "sonner";
 
-import TestTokenABI from "../../out/TestToken.sol/TestToken.json";
+import TestTokenABI from "../../submodules/contracts/artifacts/contracts/TestToken.sol/TestToken.json";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";

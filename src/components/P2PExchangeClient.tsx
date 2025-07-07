@@ -7,7 +7,7 @@ import { readContract as wagmiReadContract, waitForTransactionReceipt } from '@w
 import { erc20Abi } from "viem";
 import { toast } from "sonner";
 
-import P2PExchangeABI from "../../P2PExchange.json";
+ import P2PExchangeABI from "../../submodules/contracts/artifacts/contracts/P2PExchange.sol/P2PExchange.json";
 
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
