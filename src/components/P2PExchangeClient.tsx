@@ -104,7 +104,7 @@ export function P2PExchangeClient() {
           })
         );
 
-        console.log("fetchedOffers:", fetchedOffers);
+        
         setOffers(fetchedOffers.filter(Boolean) as Offer[]);
       } else {
         setOffers([]);
@@ -134,10 +134,16 @@ export function P2PExchangeClient() {
     }
   }, [isConfirmed, writeError, receiptError, refetchOpenOffers]);
 
-  const handleCreateOffer = async (e: React.FormEvent) => {
+  const handleCreateOffer = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
-    if (!address) return toast.error("Wallet Not Connected", { description: "Please connect your wallet first." });
-    if (!contractAddress || !tokenSell || !tokenBuy || !amountSell || !amountBuy) return toast.error("Missing Information", { description: "Please fill in all fields for creating an offer." });
+    if (!address) {
+      toast.error("Wallet Not Connected", { description: "Please connect your wallet first." });
+      return;
+    }
+    if (!contractAddress || !tokenSell || !tokenBuy || !amountSell || !amountBuy) {
+      toast.error("Missing Information", { description: "Please fill in all fields for creating an offer." });
+      return;
+    }
 
     setIsActionPending(true);
     const toastId = "create-offer-process";
@@ -147,8 +153,7 @@ export function P2PExchangeClient() {
       // 1. Fetch Decimals
       toast.loading("Fetching token decimals...", { id: toastId });
 
-      console.log("tokenSell:", tokenSell);
-      console.log("tokenBuy:", tokenBuy)
+      
 
       const [tokenSellDecimals, tokenBuyDecimals] = await Promise.all([
         wagmiReadContract(config, { abi: erc20Abi, address: tokenSell, functionName: 'decimals' }),
@@ -193,18 +198,22 @@ export function P2PExchangeClient() {
     }
   };
 
-  const handleFillOffer = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!address) return toast.error("Wallet Not Connected", { description: "Please connect your wallet first." });
-    if (!contractAddress || !fillOfferId) return toast.error("Missing Information", { description: "Please provide an Offer ID to fill." });
+  const handleFillOffer = async (offerId: bigint) => {
+    if (!address) {
+        toast.error("Wallet Not Connected", { description: "Please connect your wallet first." });
+        return;
+    }
+    if (!contractAddress || !offerId) {
+        toast.error("Missing Information", { description: "Please provide an Offer ID to fill." });
+        return;
+    }
 
     setIsActionPending(true);
     const toastId = "fill-offer-process";
     toast.loading("Starting to fill offer...", { id: toastId });
 
     try {
-        const offerIdBigInt = BigInt(fillOfferId);
-        const offerToFill = offers.find(o => o.id === offerIdBigInt);
+        const offerToFill = offers.find(o => o.id === offerId);
 
         if (!offerToFill || offerToFill.status !== 0) {
             throw new Error("Offer not found or it's not open.");
@@ -230,7 +239,7 @@ export function P2PExchangeClient() {
             address: contractAddress,
             abi: P2PExchangeABI.abi,
             functionName: "fillOffer",
-            args: [offerIdBigInt],
+            args: [offerId],
         });
         toast.success("Fill Offer Transaction Sent!", { id: toastId, description: "Waiting for final confirmation..." });
 
@@ -243,10 +252,15 @@ export function P2PExchangeClient() {
     }
   };
 
-  const handleCancelOffer = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!address) return toast.error("Wallet Not Connected");
-    if (!contractAddress || !cancelOfferId) return toast.error("Missing Information");
+  const handleCancelOffer = async (offerId: bigint) => {
+    if (!address) {
+        toast.error("Wallet Not Connected");
+        return;
+    }
+    if (!contractAddress || !offerId) {
+        toast.error("Missing Information");
+        return;
+    }
 
     setIsActionPending(true);
     const toastId = "cancel-offer-process";
@@ -257,7 +271,7 @@ export function P2PExchangeClient() {
         address: contractAddress,
         abi: P2PExchangeABI.abi,
         functionName: "cancelOffer",
-        args: [BigInt(cancelOfferId)],
+        args: [offerId],
       });
       toast.success("Cancel Offer Transaction Sent!", { id: toastId, description: "Waiting for confirmation..." });
     } catch (error) {

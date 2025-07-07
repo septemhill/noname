@@ -52,7 +52,7 @@ export function OpenOffersList({
             {offers.map((offer) => (
               <li key={offer.id.toString()} className="p-2 border rounded">
                 <div><strong>Offer ID:</strong> {offer.id.toString()}</div>
-                {console.log(`Offer ID: ${offer.id.toString()}, Maker: ${offer.maker}, Connected Address: ${address}, Is Maker: ${offer.maker === address}`)}
+                {/* console.log(`Offer ID: ${offer.id.toString()}, Maker: ${offer.maker}, Connected Address: ${address}, Is Maker: ${offer.maker === address}`) */}
                 {offer.status === 99 ? (
                   <div className="text-red-500">Error fetching details</div>
                 ) : (
